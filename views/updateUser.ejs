@@ -1,0 +1,88 @@
+<%- include("partials/header") -%>
+
+<p class="form-heading">Update the User</p>
+<div class="container-fluid form-div" >
+    <form action="/updateUser" method="post">
+        <div class="row">
+            <div class="col-md-6 form-field">
+                <label for="Name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="Name" name="name" value="<%= records[0].name %>">
+            </div>
+            <div class="col-md-6 form-field">
+                <label for="User-id" class="form-label">User id</label>
+                <input type="text" class="form-control" id="User-id" name="userId" value="<%= records[0].userId %>">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 form-field">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="<%= records[0].email %>">
+            </div>
+            <div class="col-md-6 form-field">
+                <label for="Phone" class="form-label">Phone</label>
+                <input type="number" class="form-control" id="Phone" name="phone" value="<%= records[0].phone %>">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 form-field">
+                <label for="login-id" class="form-label">login id</label>
+                <input type="text" class="form-control" id="login-id" name="loginId" value="<%= records[0].loginId %>">
+            </div>
+            <div class="col-md-6 form-field">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" value="<%= records[0].password %>">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="avatar" class="form-label">Avatar url</label>
+            <input type="text" class="form-control" id="avatar" name="avatarUrl" value="<%= records[0].avatar %>">
+        </div>
+
+        <div class="mb-3">
+            <label for="text-area" class="form-label">Remarks</label>
+            <textarea class="form-control" id="text-area" rows="3" name="remarks" value="<%= records[0].remarks %>"></textarea>
+        </div>
+
+        <div class=" container-fluid radio-break">
+            <label for="radio-div-1" class="form-label" style="display: inline-block;">Select User Role: </label>
+            <div class="container-fluid radio-div" style="display: inline; width: 40%;" id="radio-div-1">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="role" id="inlineRadio1" value="DDR">
+                    <label class="form-check-label" for="inlineRadio1">DDR</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="role" id="inlineRadio2" value="client">
+                    <label class="form-check-label" for="inlineRadio2">Client</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="role" id="inlineRadio3" value="admin">
+                    <label class="form-check-label" for="inlineRadio3">Admin</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid radio-break">
+
+            <label for="radio-div-2" class="form-label" style="display: inline-block;">User account Status: </label>
+            <div class="container-fluid radio-div" style="display: inline; width: 40%;" id="radio-div-2">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="status" id="active-id" value="active">
+                    <label class="form-check-label" for="inlineRadio1">Active</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="status" id="inactive-id" value="inactive">
+                    <label class="form-check-label" for="inlineRadio2">inactive</label>
+                </div>
+            </div>
+        </div>
+            
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="reset" class="btn btn-danger">Reset</button>
+
+        <input type="hidden" name="uniqueId" value="<%= records[0]._id %>">
+    </form>
+
+</div>
+
+<%- include("partials/footer") -%>
