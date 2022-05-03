@@ -14,6 +14,6 @@ const csvSchema = new mongoose.Schema({
     
 }); 
 
-const csvModel = new mongoose.model("csv", csvSchema); 
 
-module.exports = csvModel; 
+
+module.exports = csvSchema; 
