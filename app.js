@@ -32,7 +32,7 @@ app.set("view engine", "ejs")
 
 
 // establishing mongoDb connection
-mongoose.connect("mongodb://localhost:27017/InternDb");
+mongoose.connect("mongodb+srv://admin-ayussh:test123@cluster0.t3mdo.mongodb.net/InternDb");
 
 // crating the schema of a user collection
 
@@ -296,6 +296,6 @@ app.post("/:page/:mongoId", (req, res) => {
 
 
 
-app.listen("3000", () => {
+app.listen(process.env.PORT || "3000", () => {
    console.log("server is runnng and up intern")
 })
