@@ -1,0 +1,52 @@
+<%- include("partials/header.ejs")  -%>
+
+
+<p class="form-heading">Create new User</p>
+<div class="container-fluid form-div" >
+    <form action="/createContact" method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-6 form-field">
+                <label for="Name" class="form-label">Document title: </label>
+                <input type="text" class="form-control" id="name" name="docTitle">
+            </div>
+            <div class="col-md-6 form-field">
+                <label for="User-id" class="form-label">Industry Domain</label>
+                <input type="text" class="form-control" id="User-id" name="domain">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 form-field">
+                <label for="email" class="form-label">location</label>
+                <input type="email" class="form-control" id="email" name="location">
+            </div>
+            <div class="col-md-6 form-field">
+                <label for="fileId" class="form-label">Upload csv</label>
+                <input type="file" class="form-control" id="fileId" name="file" accept="*.csv">
+            </div>
+            
+        </div>
+        <h1>And many other fields can be also added in the form easily..........</h1>
+
+        <div class="container-fluid radio-break">
+
+            <label for="radio-div-2" class="form-label" style="display: inline-block;">List created by: </label>
+            <div class="container-fluid radio-div" style="display: inline; width: 40%;" id="radio-div-2">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="ListCreatedBy" id="active-id" value="webghat">
+                    <label class="form-check-label" for="inlineRadio1">WebGhat</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="ListCreatedBy" id="inactive-id" value="client">
+                    <label class="form-check-label" for="inlineRadio2">Client</label>
+                </div>
+            </div>
+        </div>
+            
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="reset" class="btn btn-danger">Reset</button>
+    </form>
+
+</div>
+
+
+<%- include("partials/footer.ejs")  -%>

@@ -7,12 +7,19 @@ const app = express()
 const mongoose = require('mongoose');
 const { defaultConfiguration } = require('express/lib/application');
 
+
+
+// for uploading files from form and working with a csv file after converting it.
+const fileUpload = require('express-fileupload')
+const csv = require('fast-csv'); 
+
 // to pass queries while redirecting.
 const url = require("url");
 
 
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static("public"))
+app.use(fileUpload()); 
 app.set("view engine", "ejs")
 
 
@@ -22,7 +29,6 @@ mongoose.connect("mongodb://localhost:27017/InternDb");
 // crating the schema of a user collection
 
 const userSchema = new mongoose.Schema({
-    id: String,
     role: String,
     avatar: String,
     name: String,
@@ -34,9 +40,19 @@ const userSchema = new mongoose.Schema({
     remarks: String
 });
 
+// schema of contact collection:  collection of contact details: 
+const contactSchema = new mongoose.Schema({
+   // this will take all the additonal details of the contacts. It will be exactly similar to the user model with different fields.
+   // therefore for saving time I am not repeating this and I will make a separate collection for storing data of contact.
+})
+
+
+
+
 // creating the mongoose user model: 
 
 const userModel = mongoose.model("User", userSchema); 
+const csvModel = require(__dirname+"/modules/contactCsv.js"); 
 
 // adding a sample data
 
@@ -61,6 +77,9 @@ const userModel = mongoose.model("User", userSchema);
 app.get("/", (req,res)=>{
    res.render("home")
 })
+
+// **************************** user get routes ************************
+
 app.get("/createUser", (req,res)=>{
    res.render("createUser")
 })
@@ -72,17 +91,22 @@ app.get("/readUser", (req,res)=>{
    })
 })
 
-// ********************* update user ********************
+app.get("/readMoreUser", (req,res)=>{
+   let vari = req.query.q;
+   
+   userModel.find({loginId: vari}, (err,data)=> {
+      res.render("readMoreUser", {ele:data});
+   })
+})
 
 app.get("/updateUser", (req,res)=>{
    let vari = req.query.q;
-   let data = JSON.parse(vari);
-
-   res.render("updateUser", {records: data});
+   userModel.find({loginId:vari}, (err, data)=>{
+      res.render("updateUser", {records: data})
+   })
 })
 
-// *************************** ends ********************/
-
+// ********************* contacts get routes ******************************
 app.get("/createContact", (req,res)=>{
    res.render("createContact")
 })
@@ -93,19 +117,17 @@ app.get("/updateContact", (req,res)=>{
    let vari = req.query.
    res.render("updateContact")
 })
+
+
+
 app.get("/login", (req,res)=>{
    res.render("login")
 })
 app.get("/support", (req,res)=>{
    res.render("support")
 })
-app.get("/readMoreUser", (req,res)=>{
-   let vari = req.query.q;
-   let data = JSON.parse(vari);   // converting back string to object.
 
-   console.log(data)
-   res.render("readMoreUser", {ele:data})
-})
+
 
 
 
@@ -160,6 +182,31 @@ app.post("/updateUser", (req,res)=>{
 
 })
 
+
+// create contact *******
+
+app.post("/createContact", (req,res)=> {
+   const read = req.files.file.data
+   var result = []
+   console.log(read)
+
+   csv.parseString(read.toString(), {
+      headers: true,
+      ignoreEmpty: true
+   }).on("data", (data)=> {
+      data['_id'] = new mongoose.Types.ObjectId();
+      result.push(data)
+   }).on("end", ()=> {
+      console.log(result)
+      csvModel.insertMany(result, (err)=> {
+         if(err) throw err; 
+         res.send("Data sucessfully added in the collection")
+      })
+   })
+})
+
+
+
 // custom routes: 
 app.post("/:page/:mongoId",  (req, res)=> {
    const page = req.params.page
@@ -171,29 +218,32 @@ app.post("/:page/:mongoId",  (req, res)=> {
    }
 
    else if(page === 'readMore'){
-      userModel.find({loginId:id}, (err,data)=>{
-         // res.render("readMoreUser") then it is breaking the css of the page.(don't know why)
 
-         // to user url, pass the query object in the form of string, and in the desired get page extract the data and convert it.
-         res.redirect(url.format({
-            pathname:"/readMoreUser",
-            query: {
-               "q" : JSON.stringify(data)   // converting the json to string to pass.
-            }
-         }));
-      })
+      res.redirect(url.format({
+         pathname: "/readMoreUser",
+         query: {
+            "q" : id
+         }
+      }));
    }
 
    else if(page === 'update'){
-      userModel.find({loginId:id}, (err,data)=>{
-         res.redirect(url.format({
-            pathname: "/updateUser",
-            query: {
-               "q": JSON.stringify(data)
+      // userModel.find({loginId:id}, (err,data)=>{
+      //    res.redirect(url.format({
+      //       pathname: "/updateUser",
+      //       query: {
+      //          "q": JSON.stringify(data)
             
-            }
-         }))
-      })
+      //       }
+      //    }))
+      // })
+
+      res.redirect(url.format({
+         pathname:"/updateUser",
+         query: {
+            "q": id
+         }
+      }))
    }
 
    else{
