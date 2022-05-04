@@ -23,6 +23,10 @@ const {
 } = require('querystring');
 
 
+const json2csv = require('json2csv').parse;
+const zip = require('express-zip');        // to downlaod the csv file. 
+const { format, parse } = require('path');
+
 app.use(bodyParser.urlencoded({
    extended: true
 }))
@@ -33,6 +37,7 @@ app.set("view engine", "ejs")
 
 // establishing mongoDb connection
 mongoose.connect("mongodb+srv://admin-ayussh:test123@cluster0.t3mdo.mongodb.net/InternDb");
+// mongoose.connect("mongodb://localhost:27017/InternDb");
 
 // crating the schema of a user collection
 
@@ -135,12 +140,39 @@ app.get("/createContact", (req, res) => {
    res.render("createContact")
 })
 app.get("/readContact", (req, res) => {
-   res.render("readContact")
+   contactModel.find({}, (err, data) => {
+      if (err) throw err
+      res.render("readContact", {
+         records: data
+      })
+   })
+})
+
+app.get("/readMoreContact", (req, res) => {
+   const id = req.query.q;
+   contactModel.find({
+      _id: id
+   }, (err, data) => {
+      if (err) throw err
+      // console.log("The found data in readmoreContact "+ data);
+      res.render("readMoreContact", {
+         ele: data
+      });
+   })
 })
 app.get("/updateContact", (req, res) => {
-   let vari = req.query.
-   res.render("updateContact")
+   let id = req.query.q
+   console.log("the id in updateContact is : " + id); 
+   contactModel.findOne({
+      _id: id
+   }, (err, data) => {
+      // console.log("the found data in updateCon: " + data);
+      res.render("updateContact", {
+         data: data
+      });
+   })
 })
+
 
 
 
@@ -202,7 +234,7 @@ app.post("/updateUser", (req, res) => {
       _id: uniqueId
    }, dataObject, (err) => {
       if (err) throw err
-      console.log("user updated Successfully")
+      // console.log("user updated Successfully")
       res.redirect("readUser")
    })
 
@@ -231,71 +263,154 @@ app.post("/createContact", (req, res) => {
 
 
       var doc = {
-      docTitle: req.body.docTitle,
-      domain: req.body.domain,
-      location: req.body.location,
-      filledBy: req.body.ListCreatedBy,
-      csvDocArr: result
+         docTitle: req.body.docTitle,
+         domain: req.body.domain,
+         location: req.body.location,
+         filledBy: req.body.ListCreatedBy,
+         csvDocArr: result
       }
-   
-      contactModel.insertMany(doc, (err)=> {
-         if(err) throw err;
-         console.log("contactModel updated successfully")
+
+      contactModel.insertMany(doc, (err) => {
+         if (err) throw err;
+         // console.log("contactModel updated successfully")
       })
-   
+      res.redirect("/readContact");
+      // res.send(
+      //    "<h1> Added successfully </h1> <p> after adding the page should be redirected to the /readContact page (/readContact page is not completed yet) </p>  <p> The /readContact page will be exacty similar to the /readUser page, with the same update, delete and read functionality, and an additional download csv button will be added. (refer /readUser page to evaluate /readContact)</p>")
+
    })
-   
-   
-   res.send(
-      "<h1> Added successfully </h1> <p> after adding the page should be redirected to the /readContact page (/readContact page is not completed yet) </p>  <p> The /readContact page will be exacty similar to the /readUser page, with the same update, delete and read functionality, and an additional download csv button will be added. (refer /readUser page to evaluate /readContact)</p>")
+
+
 
 })
 
 
+// update contact
+app.post("/updateContact", (req, res) => {
+         const read = req.files.file.data
+         var result = []
+   
+         csv.parseString(read.toString(), {
+            headers: true,
+            ignoreEmpty: true
+         }).on("data", (data) => {
+            data['_id'] = new mongoose.Types.ObjectId();
+            result.push(data)
+         }).on("end", () => {
+
+            var doc = {
+               docTitle: req.body.docTitle,
+               domain: req.body.domain,
+               location: req.body.location,
+               filledBy: req.body.ListCreatedBy,
+               csvDocArr: result
+            }
+            const uniquieId = req.body.uniqueId;
+            contactModel.updateOne({_id: uniquieId}, doc, (err)=> {
+               if(err) console.log(err) 
+               console.log("updated Sucessfully")
+               res.redirect("/readContact"); 
+            })
+
+         })
 
 
-// custom routes: 
-app.post("/:page/:mongoId", (req, res) => {
-   const page = req.params.page
-   const id = req.params.mongoId
-   if (page === 'delete') {
-      userModel.deleteOne({
-         loginId: id
-      }, (err, data) => {
-         res.redirect("/readUser")
       })
-   } else if (page === 'readMore') {
-
-      res.redirect(url.format({
-         pathname: "/readMoreUser",
-         query: {
-            "q": id
-         }
-      }));
-   } else if (page === 'update') {
-      // userModel.find({loginId:id}, (err,data)=>{
-      //    res.redirect(url.format({
-      //       pathname: "/updateUser",
-      //       query: {
-      //          "q": JSON.stringify(data)
-
-      //       }
-      //    }))
-      // })
-
-      res.redirect(url.format({
-         pathname: "/updateUser",
-         query: {
-            "q": id
-         }
-      }))
-   } else {
-      console.log("params are: " + page)
-   }
-})
 
 
+      
 
-app.listen(process.env.PORT || "3000", () => {
-   console.log("server is runnng and up intern")
-})
+         // custom routes: 
+
+         app.post("/:page/:mongoId", (req, res) => {
+            const page = req.params.page
+            const id = req.params.mongoId
+            if (page === 'delete') {
+               userModel.deleteOne({
+                  loginId: id
+               }, (err, data) => {
+                  res.redirect("/readUser")
+               })
+            } else if (page === 'readMore') {
+
+               res.redirect(url.format({
+                  pathname: "/readMoreUser",
+                  query: {
+                     "q": id
+                  }
+               }));
+            } else if (page === 'update') {
+               // userModel.find({loginId:id}, (err,data)=>{
+               //    res.redirect(url.format({
+               //       pathname: "/updateUser",
+               //       query: {
+               //          "q": JSON.stringify(data)
+
+               //       }
+               //    }))
+               // })
+
+               res.redirect(url.format({
+                  pathname: "/updateUser",
+                  query: {
+                     "q": id
+                  }
+               }))
+            } else if (page === 'deleteContact') {
+               contactModel.deleteOne({
+                  _id: id
+               }, (err) => {
+                  if (err) throw err
+                  // console.log("successfully deleted");
+                  res.redirect("/readContact")
+               })
+            } else if (page === 'readMoreContact') {
+               console.log("the id in readmorecontact is ; "+ id)
+               res.redirect(url.format({
+                  pathname: "/readMoreContact",
+                  query: {
+                     "q": id
+                  }
+               }))
+            } else if (page === 'updateContact') {
+               res.redirect(url.format({
+                  pathname: "/updateContact",
+                  query: {
+                     "q": id
+                  }
+               }))
+
+            }
+
+            else if(page === 'downloadCsv'){
+               // step1: find the array of json to covert to csv
+               console.log("in the /downloadcsv")
+               var csvArr = [];
+               contactModel.findOne({_id: id}, (err, data)=>{
+                  csvArr = data.csvDocArr;
+                  console.log(csvArr); 
+
+                  // step2: convert the json to csv
+                  let fields = ['Name', 'Title', 'Email', 'Linkedin', 'Company', 'Industry', 'Website', 'Headquarter', 'Revenue', 'Company Size']
+                  var csvfile = json2csv(csvArr, {fields: fields})
+                  
+                  console.log(csvfile);
+
+                  // step3: to download the csv file. (note : to give the download command, just res.send(csvfile))
+                  res.setHeader('Content-disposition', 'attachment; filename=data.csv');
+                  res.set('Content-Type', 'text/csv');
+                  res.status(200).send(csvfile);
+
+               })
+
+            }
+
+
+
+         })
+
+
+
+         app.listen(process.env.PORT || "3000", () => {
+            console.log("server is runnng and up intern")
+         })

@@ -1,0 +1,16 @@
+<%- include("partials/header") -%>
+
+<h1>Display all the details of the particular contact</h1>
+<br><br>
+
+<ul>
+    <li>docTitle: <%= ele[0].docTitle %></li>
+    <li>domain: <%= ele[0].domain %></li>
+    <li>location:<%= ele[0].location %> </li>
+    <br><br>
+    <h1>And many more things about the user can be render here</h1>
+    <p>Can also display the csv contents in table form</p>
+</ul>
+
+<button>Add a download csv</button>
+<%- include("partials/footer") -%>
